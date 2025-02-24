@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMU Sensor Data Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<h1>IMU Sensor Data Visualization</h1>
+<canvas id="gyroChart"></canvas>
+<canvas id="acceChart"></canvas>
+
+<script>
+    const fullData = {
+        gyro: { x: [], y: [], z: [], timestamps: [] },
+        acce: { x: [], y: [], z: [], timestamps: [] }
+    };
+
+    function updateChart(chart, sensorType) {
+        chart.data.labels = fullData[sensorType].timestamps;
+        chart.data.datasets[0].data = fullData[sensorType].x;
+        chart.data.datasets[1].data = fullData[sensorType].y;
+        chart.data.datasets[2].data = fullData[sensorType].z;
+        chart.update();
+    }
+
+    function createChart(ctx, label) {
+        return new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: `${label} X`, borderColor: 'red', data: [], fill: false },
+                    { label: `${label} Y`, borderColor: 'green', data: [], fill: false },
+                    { label: `${label} Z`, borderColor: 'blue', data: [], fill: false }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Time' },
+                        ticks: {
+                            maxTicksLimit: 10,
+                            callback: function(value, index, values) {
+                                return index % Math.ceil(values.length / 10) === 0 ? this.getLabelForValue(value) : '';
+                            }
+                        }
+                    },
+                    y: { title: { display: true, text: 'Value' } }
+                },
+                animation: false,
+                elements: {
+                    point: {
+                        radius: 0
+                    }
+                }
+            }
+        });
+    }
+
+    const gyroChart = createChart(document.getElementById('gyroChart').getContext('2d'), 'Gyro');
+    const acceChart = createChart(document.getElementById('acceChart').getContext('2d'), 'Acce');
+
+    const socket = io();
+    socket.on('update', function(data) {
+        const timestamp = new Date().toLocaleTimeString();
+
+        if (data.gyro) {
+            fullData.gyro.x.push(data.gyro.x);
+            fullData.gyro.y.push(data.gyro.y);
+            fullData.gyro.z.push(data.gyro.z);
+            fullData.gyro.timestamps.push(timestamp);
+            updateChart(gyroChart, 'gyro');
+        }
+
+        if (data.acce) {
+            fullData.acce.x.push(data.acce.x);
+            fullData.acce.y.push(data.acce.y);
+            fullData.acce.z.push(data.acce.z);
+            fullData.acce.timestamps.push(timestamp);
+            updateChart(acceChart, 'acce');
+        }
+    });
+</script>
+</body>
+</html>
