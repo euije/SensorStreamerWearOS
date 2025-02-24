@@ -15,6 +15,7 @@ import android.os.PowerManager;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -100,6 +101,8 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -132,7 +135,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
         // setup and register various sensors
         mSensors.put("acce", mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
-        // mSensors.put("gyro", mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE));
+        mSensors.put("gyro", mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE));
         // mSensors.put("rotvec", mSensorManager.getDefaultSensor((Sensor.TYPE_ROTATION_VECTOR)));
         // mSensors.put("mag", mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
 
@@ -156,7 +159,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         @Override
         public void onClick(View arg0) {
             status = false;
-            audioRecorder.release();
+//            audioRecorder.release();
             socket.close();
 //            mIsRecording.set(false);
             Log.d("VS","Recorder released");
@@ -178,7 +181,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 e.printStackTrace();
             }
             registerSensors();
-            startStreaming();
+//            startStreaming();
         }
 
     };
